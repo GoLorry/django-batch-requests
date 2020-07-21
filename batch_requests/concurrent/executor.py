@@ -7,6 +7,7 @@ from abc import ABCMeta
 from concurrent.futures.thread import ThreadPoolExecutor
 from concurrent.futures.process import ProcessPoolExecutor
 
+from django.db import transaction
 
 class Executor(object):
     '''
@@ -35,7 +36,33 @@ class SequentialExecutor(Executor):
         return [resp_generator(request) for request in requests]
 
 
-class ThreadBasedExecutor(Executor):
+class AtomicExecutor(Executor):
+    '''
+        Sequential executor that rolls back the transaction if there's an error.
+    '''
+
+    def execute(self, requests, resp_generator, *args, **kwargs):
+        '''
+            Calls the resp_generator for all the requests in a single transaction.
+        '''
+        response = []
+        try:
+            with transaction.atomic():
+                for request in requests:
+                    r = resp_generator(request)
+                    response.append(r)
+                    if r["status_code"] >= 400:
+                        raise ValueError()
+        except ValueError:
+            pass
+        return response
+
+
+class ParallelExecutor(Executor):
+    pass
+
+
+class ThreadBasedExecutor(ParallelExecutor):
     '''
         An implementation of executor using threads for parallelism.
     '''
@@ -46,7 +73,7 @@ class ThreadBasedExecutor(Executor):
         self.executor_pool = ThreadPoolExecutor(num_workers)
 
 
-class ProcessBasedExecutor(Executor):
+class ProcessBasedExecutor(ParallelExecutor):
     '''
         An implementation of executor using process(es) for parallelism.
     '''
