@@ -33,7 +33,7 @@ class TestSettings(TestCase):
 
         # Assert we get a bad request.
         self.assertEqual(batch_requests.status_code, 400, "MAX_LIMIT setting not working.")
-        self.assertTrue(batch_requests.content.lower().startswith("you can batch maximum of"))
+        self.assertTrue(batch_requests.content.lower().startswith(b"you can batch maximum of"))
 
     def test_custom_header(self):
         '''

@@ -2,8 +2,6 @@
 """
 From https://github.com/tomchristie/django-rest-framework/blob/bf09c32de8f9d528f83e9cb7a2773d1f4c9ab563/runtests.py
 """
-from __future__ import print_function
-
 import os
 import subprocess
 import sys

@@ -36,7 +36,7 @@ class TestBase(TestCase):
         '''
             Returns a dict of all the parameters.
         '''
-        return {"status_code": status_code, "body": body, "headers": self.headers_dict(headers)}
+        return {"status_code": status_code, "body": body.decode(), "headers": self.headers_dict(headers)}
 
     def _batch_request(self, method, path, data, headers={}):
         '''

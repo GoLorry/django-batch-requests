@@ -6,10 +6,10 @@
 
 import json
 
-from django.core.urlresolvers import resolve
 from django.http.response import HttpResponse, HttpResponseBadRequest,\
     HttpResponseServerError
 from django.template.response import ContentNotRenderedError
+from django.urls import resolve
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -34,17 +34,17 @@ def get_response(wsgi_request):
     try:
         resp = view(*args, **kwargs)
     except Exception as exc:
-        resp = HttpResponseServerError(content=exc.message)
+        resp = HttpResponseServerError(content=str(exc))
 
     headers = dict(resp._headers.values())
     # Convert HTTP response into simple dict type.
     d_resp = {"status_code": resp.status_code, "reason_phrase": resp.reason_phrase,
               "headers": headers}
     try:
-        d_resp.update({"body": resp.content})
+        d_resp.update({"body": resp.content.decode(resp.charset)})
     except ContentNotRenderedError:
         resp.render()
-        d_resp.update({"body": resp.content})
+        d_resp.update({"body": resp.content.decode(resp.charset)})
 
     # Check if we need to send across the duration header.
     if _settings.ADD_DURATION_HEADER:
@@ -114,7 +114,7 @@ def handle_batch_requests(request, *args, **kwargs):
         # Get the Individual WSGI requests.
         wsgi_requests = get_wsgi_requests(request)
     except BadBatchRequest as brx:
-        return HttpResponseBadRequest(content=brx.message)
+        return HttpResponseBadRequest(content=str(brx))
 
     # Fire these WSGI requests, and collect the response for the same.
     response = execute_requests(wsgi_requests)
