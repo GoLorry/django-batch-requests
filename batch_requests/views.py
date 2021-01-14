@@ -116,6 +116,12 @@ def handle_batch_requests(request, *args, **kwargs):
     except BadBatchRequest as brx:
         return HttpResponseBadRequest(content=str(brx))
 
+    # adding session and user manually to sub-requests as there's a problem with automatically 
+    if "session" in request and "user" in request:
+        for wsgi_request in wsgi_requests:
+            wsgi_request.session = request.session
+            wsgi_request.user = request.user
+
     # Fire these WSGI requests, and collect the response for the same.
     response = execute_requests(wsgi_requests)
 
