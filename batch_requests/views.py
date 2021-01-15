@@ -13,6 +13,8 @@ from django.urls import resolve
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from rest_framework.authtoken.models import Token
+
 from batch_requests.exceptions import BadBatchRequest
 from batch_requests.settings import br_settings as _settings
 from batch_requests.utils import get_wsgi_request_object
@@ -89,6 +91,14 @@ def get_wsgi_requests(request):
 
         body = data.get("body", "")
         headers = data.get("headers", {})
+
+        '''
+            Add token manually to sub-requests as there's a problem with automatic sub-requests'
+            session auth 
+        '''
+        token, created = Token.objects.get_or_create(user=request.user)
+        headers["Authorization"] = f"Token {token}"
+
         return get_wsgi_request_object(request, method, url, headers, body)
 
     return [construct_wsgi_from_data(data) for data in requests]
