@@ -13,8 +13,6 @@ from django.urls import resolve
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from rest_framework.authtoken.models import Token
-
 from batch_requests.exceptions import BadBatchRequest
 from batch_requests.settings import br_settings as _settings
 from batch_requests.utils import get_wsgi_request_object
@@ -72,11 +70,9 @@ def get_wsgi_requests(request):
     if no_requests > _settings.MAX_LIMIT:
         raise BadBatchRequest("You can batch maximum of %d requests." % (_settings.MAX_LIMIT))
 
-    # token to be assigned to the header of each sub-requests
-    token, _ = Token.objects.get_or_create(user=request.user)
-
     # We could mutate the current request with the respective parameters, but mutation is ghost in the dark,
     # so lets avoid. Construct the new WSGI request object for each request.
+
     def construct_wsgi_from_data(data):
         '''
             Given the data in the format of url, method, body and headers, construct a new
@@ -93,13 +89,6 @@ def get_wsgi_requests(request):
 
         body = data.get("body", "")
         headers = data.get("headers", {})
-
-        '''
-            Add token manually to sub-requests as there's a problem with automatic sub-requests'
-            session auth 
-        '''
-        headers["Authorization"] = f"Token {token}"
-
         return get_wsgi_request_object(request, method, url, headers, body)
 
     return [construct_wsgi_from_data(data) for data in requests]
