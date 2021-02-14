@@ -103,4 +103,8 @@ def get_wsgi_request_object(curr_request, method, url, headers, body):
     request = _request_provider(url, data=body, secure=secure,
                                 content_type=content_type, **x_headers)
 
+    for attr in _settings.MIDDLEWARE_ATTRIBUTES:
+        if hasattr(curr_request, attr):
+            setattr(request, attr, getattr(curr_request, attr))
+
     return request

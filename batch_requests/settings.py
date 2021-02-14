@@ -11,6 +11,7 @@ import multiprocessing
 from batch_requests.concurrent.executor import ParallelExecutor
 
 DEFAULTS = {
+    "MIDDLEWARE_ATTRIBUTES": [],
     "HEADERS_TO_INCLUDE": ["HTTP_USER_AGENT", "HTTP_COOKIE"],
     "DEFAULT_CONTENT_TYPE": "application/json",
     "USE_HTTPS": False,
