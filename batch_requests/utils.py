@@ -107,4 +107,6 @@ def get_wsgi_request_object(curr_request, method, url, headers, body):
         if hasattr(curr_request, attr):
             setattr(request, attr, getattr(curr_request, attr))
 
+    request.batch_user = curr_request.user
+
     return request
