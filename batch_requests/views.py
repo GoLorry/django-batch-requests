@@ -36,7 +36,7 @@ def get_response(wsgi_request):
     except Exception as exc:
         resp = HttpResponseServerError(content=str(exc))
 
-    headers = dict(resp._headers.values())
+    headers = dict(resp.headers.values())
     # Convert HTTP response into simple dict type.
     d_resp = {"status_code": resp.status_code, "reason_phrase": resp.reason_phrase,
               "headers": headers}
